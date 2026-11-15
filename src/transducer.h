@@ -1,4 +1,5 @@
-#pragma once
+#ifndef TRANSDUCER_H
+#define TRANSDUCER_H
 
 #include <Arduino.h>
 //#include <ArduinoSTL.h>
@@ -40,3 +41,5 @@ public:
   String status();
   String value();
 };
+
+#endif // TRANSDUCER_H

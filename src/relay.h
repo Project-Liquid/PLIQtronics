@@ -1,4 +1,5 @@
-#pragma once
+#ifndef RELAY_H
+#define RELAY_H
 
 #include <Arduino.h>
 
@@ -30,3 +31,5 @@ public:
   void clearSchedule();
   void neutralize();
 };
+
+#endif // RELAY_H

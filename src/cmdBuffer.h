@@ -1,4 +1,6 @@
-#pragma once
+#ifndef CMDBUFFER_H
+#define CMDBUFFER_H
+
 #include <Arduino.h>
 #define CMD_BUF_SIZE 32
 
@@ -12,3 +14,5 @@ public:
   CmdBuffer();
   bool feed(Stream &s, String &out);
 };
+
+#endif

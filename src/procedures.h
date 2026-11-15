@@ -1,4 +1,5 @@
-#pragma once
+#ifndef PROCEDURES_H
+#define PROCEDURES_H
 
 #include "main.h"
 
@@ -41,3 +42,5 @@ void ventNitrous();
 void coldFlowEthane(long duration_ms);
 void coldFlowNitrous(long duration_ms);
 void staticFire();
+
+#endif // PROCEDURES_H

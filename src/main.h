@@ -1,4 +1,5 @@
-#pragma once
+#ifndef MAIN_H
+#define MAIN_H
 
 #include "transducer.h"
 #include "relay.h"
@@ -228,3 +229,5 @@ extern Redline NitrousUnderweight;
 extern Redline EthaneOverweight;
 extern Redline NitrousOverweight;
 
+
+#endif // MAIN_H

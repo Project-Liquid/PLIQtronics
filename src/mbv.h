@@ -1,4 +1,5 @@
-#pragma once
+#ifndef MBV_H
+#define MBV_H
 
 #include <Arduino.h>
 #include <Encoder.h>
@@ -54,3 +55,4 @@ public:
   void neutralize();
 };
 
+#endif

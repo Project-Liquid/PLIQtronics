@@ -1,4 +1,5 @@
-#pragma once
+#ifndef THERMOCOUPLE_H
+#define THERMOCOUPLE_H
 
 #include <Wire.h>
 // #include <Adafruit_I2CDevice.h>
@@ -19,3 +20,5 @@ public:
   float readCold();
   float readADC();
 };
+
+#endif // THERMOCOUPLE_H

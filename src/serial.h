@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SERIAL_H
+#define SERIAL_H
 
 #include <Arduino.h>
 
@@ -24,3 +25,5 @@ public:
 
     using Print::write;
 };
+
+#endif // SERIAL_H

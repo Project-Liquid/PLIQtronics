@@ -1,4 +1,5 @@
-#pragma once
+#ifndef REDLINE_H
+#define REDLINE_H
 
 class Redline {
 private:
@@ -15,3 +16,5 @@ public:
   void Redline::setThreshold(int counts_threshold);
   int Redline::checkTrigger(int current_priority);
 };
+
+#endif // REDLINE_H

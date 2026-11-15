@@ -1,4 +1,5 @@
-#pragma once
+#ifndef LOADCELL_H
+#define LOADCELL_H
 
 #include <Arduino.h>
 #include <HX711.h>
@@ -24,3 +25,5 @@ public:
   void join(LoadCell* LC2, LoadCell* LC3);
   float readJoint(int samples = 1);
 };
+
+#endif

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef HEATER_H
+#define HEATER_H
 
 #include "transducer.h"
 
@@ -18,3 +19,5 @@ public:
   void off();
   void update();
 };
+
+#endif

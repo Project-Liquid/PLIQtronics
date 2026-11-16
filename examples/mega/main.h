@@ -3,7 +3,7 @@
 
 #include "transducer.h"
 #include "relay.h"
-#include "mbv.h"
+#include "mbvContinuous.h"
 #include "loadCell.h"
 #include "thermocouple.h"
 #include "heater.h"

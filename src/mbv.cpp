@@ -1,122 +1,100 @@
 #include "mbv.h"
 
-MBV::MBV(int pwm_pin, int encoder_pin_1, int encoder_pin_2)
-  : pwm_pin(pwm_pin), enc(encoder_pin_1, encoder_pin_2) {
-  current_position = 0;
-  target_position = 0;
-  moving = false;
+MBV::MBV(int speed_pin, int dir_pin_1, int dir_pin_2, int open_limit_pin, int close_limit_pin) {
+    this->speed_pin = speed_pin;
+    this->dir_pin_1 = dir_pin_1;
+    this->dir_pin_2 = dir_pin_2;
+    this->open_limit_pin = open_limit_pin;
+    this->close_limit_pin = close_limit_pin;
 
-  pinMode(pwm_pin, OUTPUT);
-  analogWrite(pwm_pin, 0);
-  enc.write(0);
+    pinMode(speed_pin, OUTPUT);
+    pinMode(dir_pin_1, OUTPUT);
+    pinMode(dir_pin_2, OUTPUT);
+    pinMode(open_limit_pin, INPUT_PULLUP);
+    pinMode(close_limit_pin, INPUT_PULLUP);
+
+    this->speed = 0;
+    this->forward = true;
+    target = 0;
 }
 
-bool MBV::next_90() {
-  // current_position = enc.read();
-  if (moving) return false;
-  float current_deg = current_position / counts_per_degree;
-  float next_deg = (floor(current_deg / 90.0) + 1.0) * 90.0;
-  if ((next_deg - current_deg) * counts_per_degree <= SKIP_ZONE) {
-      next_deg += 90.0;
-  }
-  target_position = (long)(next_deg * counts_per_degree);
-  moving = true;
-  move_start_ms = millis();
-  // Serial.print("Moving to: "); Serial.println(target_position / counts_per_degree);
-  return true;
+void MBV::setSpeed(int speed) {
+    this->speed = constrain(speed, 0, 255);
 }
 
-bool MBV::move_degrees(float degrees) {
-  if(moving) return false;
-  // current_position = enc.read();
-  target_position = current_position + (long)(degrees * counts_per_degree);
-  moving = true;
-  move_start_ms = millis();
-  return true;
+void MBV::setDirection(bool forward) {
+    this->forward = forward;
 }
 
-void MBV::reset() {
-  enc.write(0);
-  target_position = 0;
+void MBV::brake() {
+    digitalWrite(dir_pin_1, LOW);
+    digitalWrite(dir_pin_2, LOW);
+    analogWrite(speed_pin, 255);
+    target = 0;
 }
 
-/**
- * Checks if at target position
- */
-void MBV::update() {
-  current_position = enc.read();
-  if (moving) {
-    long error = target_position - current_position;
-    //Serial.print("Error: "); Serial.println(error);
+void MBV::coast() {
+    digitalWrite(dir_pin_1, LOW);
+    digitalWrite(dir_pin_2, LOW);
+    analogWrite(speed_pin, 0);
+    target = 0;
+}
 
-    if (abs(error) <= STOP_ZONE || millis() - move_start_ms > TIMEOUT_MS) {
-      analogWrite(pwm_pin, 0);
-      moving = false;
-      //delay(250);
-      // Serial.print("Stopped at: ");
-      // Serial.print(current_position / counts_per_degree);
-      // Serial.println(" degrees");
-    } else if (abs(error) < SLOW_ZONE) {
-      analogWrite(pwm_pin, MOTOR_SLOW);
+void MBV::run() {
+    if (forward) {
+        digitalWrite(dir_pin_1, HIGH);
+        digitalWrite(dir_pin_2, LOW);
     } else {
-      analogWrite(pwm_pin, MOTOR_FAST);
+        digitalWrite(dir_pin_1, LOW);
+        digitalWrite(dir_pin_2, HIGH);
     }
-  }
+    analogWrite(speed_pin, speed);
+
+    if (target == 1) {
+        if (digitalRead(open_limit_pin) == 1) {
+            Serial.println("MBV: Open limit reached");
+            brake();
+            target = 0;
+        }
+    } else if (target == 2) {
+        if (digitalRead(close_limit_pin) == 1) {
+            Serial.println("MBV: Close limit reached");
+            brake();
+            target = 0;
+        }
+    }
 }
 
-void MBV::status() {
-  Serial.print("Target: ");
-  Serial.print(target_position);
-  Serial.print(" (degrees: ");
-  Serial.print(target_position / counts_per_degree);
-  Serial.println(")");
-
-  Serial.print("Position: ");
-  Serial.print(current_position);
-  Serial.print(" (degrees: ");
-  Serial.print(current_position / counts_per_degree);
-  Serial.println(")");
+void MBV::open() {
+    setDirection(true);
+    speed = 255;
+    target = 1;
+    run();
 }
 
-long MBV::getCurrentPosition() {
-  return current_position;
+void MBV::close() {
+    setDirection(false);
+    speed = 255;
+    target = 2;
+    run();
 }
 
-float MBV::getCurrentDegrees() {
-  return getCurrentPosition() / counts_per_degree;
-} 
-
-bool MBV::isOpen() {
-  if (((int)getCurrentDegrees() % 180) < 45 || ((int)getCurrentDegrees() % 180) > 135) {
-    return false;
-  }
-  return true;
+void MBV::jog(int speed) {
+    if (speed > 0) {
+    digitalWrite(dir_pin_1, HIGH);
+    digitalWrite(dir_pin_2, LOW);
+    analogWrite(speed_pin, speed);
+    }
+    else {
+    digitalWrite(dir_pin_1, LOW);
+    digitalWrite(dir_pin_2, HIGH);
+    analogWrite(speed_pin, abs(speed));
+    }
 }
 
-void MBV::setNextActuation(int delay, float degrees) {
-  if (count < MAX_SCHEDULE) {
-    schedule[tail] = { millis() + (unsigned long)delay, degrees };
-    tail = (tail + 1) % MAX_SCHEDULE; // Wrap around if we hit the end of the array
-    count++;
-  } else {
-    Serial.println("Warning: Actuation queue is full!");
-  }
-}
-
-void MBV::checkScheduledActuation() {
-  if (count > 0 && millis() >= schedule[head].trigger_ms) {
-    next_90();
-    head = (head + 1) % MAX_SCHEDULE; // Move the head forward to "erase" the task
-    count--;
-  }
-}
-
-void MBV::clearSchedule() {
-  head = 0;
-  tail = 0;
-  count = 0;
-}
-
-void MBV::neutralize() {
-  clearSchedule();
+void MBV::check_limits() {
+    Serial.print("Open switch: ");
+    Serial.println(digitalRead(open_limit_pin));
+    Serial.print("Close switch: ");
+    Serial.println(digitalRead(close_limit_pin));
 }

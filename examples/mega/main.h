@@ -46,10 +46,6 @@
 
 #define CHAMBER_TC_PIN 53
 
-// #define ETHANE_HEATER_1_PIN   49
-// #define ETHANE_HEATER_2_PIN   41
-// #define NITROUS_HEATER_1_PIN  43
-// #define NITROUS_HEATER_2_PIN  45
 #define ETHANE_HEATER_1_PIN   43
 #define ETHANE_HEATER_2_PIN   45
 #define NITROUS_HEATER_1_PIN  49

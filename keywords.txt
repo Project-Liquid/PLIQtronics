@@ -1,0 +1,10 @@
+CmdBuffer   KEYWORD1
+Heater  KEYWORD1
+LoadCell    KEYWORD1
+MBV KEYWORD1
+Redline KEYWORD1
+Relay   KEYWORD1
+SerialDual  KEYWORD1
+Thermocouple    KEYWORD1
+ThrustCell  KEYWORD1
+Transducer  KEYWORD1

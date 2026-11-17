@@ -14,11 +14,13 @@ bool CmdBuffer::feed(Stream &s, String &out) {
       out = buf;
       buf = "";
       overflow = false;
+      head = 0;
       return true;
     }
 
     // Write the character, THEN check if we're now full
     buf += c;
+    head++;
 
     if (head >= CMD_BUF_SIZE - 1) {
       // Buffer full with no newline — discard and reset

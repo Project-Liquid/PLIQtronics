@@ -65,7 +65,7 @@ void LoadCell::tare() {
   scale.tare();
 }
 
-float LoadCell::read(int samples) {
+float LoadCell::read() {
   if (scale.is_ready()) raw = scale.get_units();
   float weight_grams = raw / cal;
   float weight_lbs = weight_grams / 453.592;
@@ -118,11 +118,9 @@ void LoadCell::join(LoadCell* LC2, LoadCell* LC3) {
   joint = true;
 }
 
-float LoadCell::readJoint(int samples) {
+float LoadCell::readJoint() {
   if (joint) {
-    return this->read(samples);// + LC2->read(samples) + LC3->read(samples);
+    return this->read() + LC2->read() + LC3->read();
   }
   return -1;
 }
-
-

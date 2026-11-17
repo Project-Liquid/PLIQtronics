@@ -2,6 +2,7 @@
 
 Redline::Redline(bool (*trigger_condition)(), void (*response)(), int priority, int counts_threshold) 
   : trigger_condition(trigger_condition), response(response), priority(priority), counts_threshold(counts_threshold) {
+    counts = 0;
 }
 
 void Redline::setTriggerCondition(bool (*trigger_condition)()) {

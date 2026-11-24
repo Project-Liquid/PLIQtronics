@@ -45,9 +45,6 @@ The library contains two alternative `MBV` implementations:
   switches.
 - `mbvContinuous.h` is for a PWM motor with an encoder.
 
-Both declare a class named `MBV`. Choose one implementation for a sketch; do not
-include both headers in the same program.
-
 ## Quick start
 
 This example reads a pressure transducer. Set the analog pin and pressure range

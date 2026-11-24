@@ -54,8 +54,8 @@ Heater EthaneHeater1(ETHANE_HEATER_1_PIN, &EthaneUpstreamPT);
 Heater EthaneHeater2(ETHANE_HEATER_2_PIN, &EthaneDownstreamPT);
 Heater NitrousHeater1(NITROUS_HEATER_1_PIN, &NitrousUpstreamPT);
 Heater NitrousHeater2(NITROUS_HEATER_2_PIN, &NitrousDownstreamPT);
-Thermocouple RerouteTC(0x66);
-Thermocouple ChamberTC(0x65);
+Thermocouple RerouteTC(REROUTE_TC_ADDRESS);
+Thermocouple ChamberTC(CHAMBER_TC_ADDRESS);
 Thermocouple RerouteTC3(0x67);
 //ADS1118* ChamberTC = nullptr;
 CmdBuffer serialBuf; // 9

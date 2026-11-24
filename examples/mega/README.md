@@ -27,41 +27,49 @@ board revision and wiring.
 
 | Function | Arduino Mega pin(s) | Notes |
 |---|---:|---|
-| Ethane upstream pressure | A12 | Analog transducer |
-| Ethane downstream pressure | A11 | Analog transducer |
-| Nitrous upstream pressure | A10 | Analog transducer |
-| Nitrous downstream pressure | A9 | Analog transducer |
+| Ethane upstream pressure | 8 | Analog transducer; pin value as defined in `main.h` |
+| Ethane downstream pressure | 9 | Analog transducer; pin value as defined in `main.h` |
+| Nitrous upstream pressure | 10 | Analog transducer; pin value as defined in `main.h` |
+| Nitrous downstream pressure | 11 | Analog transducer; pin value as defined in `main.h` |
 | Reroute pressure | A8 | Analog transducer |
 | Chamber pressure | A13 | Analog transducer |
-| Ethane run valve | 47 | Relay output |
-| Ethane vent valve | 46 | Relay output |
-| Nitrous run valve | 36 | Relay output |
-| Nitrous vent valve | 40 | Relay output |
-| Ethane MBV motor | 1, 2, 3 | Constructor order: speed/PWM, direction 1, direction 2 |
-| Ethane MBV limit switches | 44, 42 | Open, close |
-| Nitrous MBV motor | 1, 2, 3 | Constructor order: speed/PWM, direction 1, direction 2 |
-| Nitrous MBV limit switches | 38, 48 | Open, close |
-| Ethane load cells 1/2/3 | 22/23, 24/25, 26/27 | Each pair is passed to a `LoadCell` |
-| Nitrous load cells 1/2/3 | 34/35, 32/33, 30/31 | Each pair is passed to a `LoadCell` |
+| Ethane run valve | 36 | Relay output |
+| Ethane vent valve | 35 | Relay output |
+| Nitrous run valve | 42 | Relay output |
+| Nitrous vent valve | 38 | Relay output |
+| Ethane MBV motor | 99, 6, 7 | Constructor order: speed/PWM, direction 1, direction 2 |
+| Ethane MBV limit switches | 46, 45 | Open, close |
+| Nitrous MBV motor | 99, 4, 5 | Constructor order: speed/PWM, direction 1, direction 2 |
+| Nitrous MBV limit switches | 49, 48 | Open, close |
+| Ethane load cell 1 | 30, 31 | DATA, SCK |
+| Ethane load cell 2 | 32, 33 | DATA, SCK |
+| Ethane load cell 3 | 26, 27 | DATA, SCK |
+| Nitrous load cell 1 | 22, 23 | DATA, SCK |
+| Nitrous load cell 2 | 24, 25 | DATA, SCK |
+| Nitrous load cell 3 | 12, 13 | DATA, SCK |
 | Ethane heaters 1/2 | 43, 45 | Heater outputs |
 | Nitrous heaters 1/2 | 49, 41 | Heater outputs |
 | Ignitor | 39 | Relay output |
-| Chamber thermocouple chip select | 53 | Defined but the active MCP9600 setup uses I2C addresses |
-| Serial console | `Serial` | Hardline serial |
-| Radio serial | `Serial2` | Mega hardware serial |
-| Thermocouples | I2C | MCP9600 addresses `0x66`, `0x65`, `0x67` |
-| Thrust cell | I2C | Constructed as `ThrustCell`; uses the library's Qwiic Scale driver |
+| Serial console | RX 0, TX 1 | `Serial`; hardline serial |
+| Radio serial | RX2 17, TX2 16 | `Serial2` |
+| I2C bus | SDA 20, SCL 21 | Shared by the thermocouples and thrust cell |
+| Reroute thermocouple | I2C address `0x66` | Address used by the active constructor in `mega.ino` |
+| Chamber thermocouple | I2C address `0x65` | Address used by the active constructor in `mega.ino` |
+| Additional thermocouple (`RerouteTC3`) | I2C address `0x67` | Constructed and initialized in the sketch |
+| Thrust cell | I2C | Qwiic Scale driver |
 
 ### Pin-map and setup caveats
 
-- Both MBV motor definitions currently use pins 1, 2, and 3. That assigns the
-  same motor outputs to both valves, so confirm whether this is intentional
-  before wiring or operating the system.
-- Mega pin 1 is the `Serial` transmit pin, and this sketch also uses `Serial`.
-  Avoid sharing it with an MBV motor driver; resolve the assignment conflict
-  in the hardware map and firmware first.
-- The thermocouple objects are created using I2C addresses; `CHAMBER_TC_PIN`
-  and the ADS1118 setup shown in the sketch are not used by the active setup.
+- Both MBVs use speed pin 99, which is not a standard Arduino Mega pin; verify
+  the target board and motor-driver wiring. Their direction pins differ.
+- Ethane's close-limit input and heater 2 both use pin 45; nitrous's
+  open-limit input and heater 1 both use pin 49. Resolve these pin conflicts
+  before connecting hardware.
+- The pressure-transducer macros use the literal pin values 8 through 11.
+  Verify that the selected Mega core maps these values to the intended analog
+  channels.
+- The ADS1118/SPI chamber-sensor setup is commented out; active thermocouples
+  use I2C addresses.
 - Load-cell calibration factors, pressure ranges, and heater targets are
   project-specific values, not defaults suitable for other hardware.
 
@@ -175,11 +183,10 @@ serial commands, software redlines, or `E_STOP` as substitutes for independent
 hardware interlocks and approved operating procedures. Before connecting any
 hazardous system:
 
-1. Resolve the duplicate MBV motor pins and the pin 1 / serial conflict.
-2. Verify sensor wiring, ranges, units, calibration, and thermocouple addresses.
-3. Compile the exact sketch and confirm each redline response with simulated
+1. Verify sensor wiring, ranges, units, calibration, and thermocouple addresses.
+2. Compile the exact sketch and confirm each redline response with simulated
    inputs or a non-operational test setup.
-4. Test motor directions, limit switches, relay polarity, schedules, and
+3. Test motor directions, limit switches, relay polarity, schedules, and
    emergency behavior with actuators isolated from hazardous equipment.
-5. Have the system reviewed and approved by the responsible engineering and
+4. Have the system reviewed and approved by the responsible engineering and
    safety authorities.

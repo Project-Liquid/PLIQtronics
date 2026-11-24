@@ -74,7 +74,7 @@ Redline NitrousUnderweight(NitrousUnderweightCondition, NitrousUnderweightRespon
 Redline EthaneOverweight(EthaneOverweightCondition, EthaneOverweightResponse, ETHANE_OVERWEIGHT_PRIORITY, OVERWEIGHT_COUNTS_THRESHOLD);
 Redline NitrousOverweight(NitrousOverweightCondition, NitrousOverweightResponse, NITROUS_OVERWEIGHT_PRIORITY, OVERWEIGHT_COUNTS_THRESHOLD);
 /** TODO: MAKE ARRAY INDEXED BY PRIORITY */
-Redline Redlines[11] = {EthaneOverpressure, NitrousOverpressure, EthaneMBVCloseFailure, NitrousMBVCloseFailure, 
+Redline Redlines[NUM_REDLINES] = {EthaneOverpressure, NitrousOverpressure, EthaneMBVCloseFailure, NitrousMBVCloseFailure, 
   CombustionPropogation, InlineThermalDecomp, LostLoadCell, EthaneUnderweight, NitrousUnderweight, EthaneOverweight, NitrousOverweight};
 
 //===========================FUNCTIONS============================//
@@ -101,14 +101,14 @@ void status(TransmissionType format = COMPRESSED) {
       SerialDual.print("Reroute: \t" + ReroutePT.status());
       // Load Cells
       SerialDual.print("Ethane: \t");
-      SerialDual.print("LC1: " + String(EthaneLC1->read(1))); 
-      SerialDual.print("\tLC2: " + String(EthaneLC2->read(1)));
-      SerialDual.print("\tLC3: " + String(EthaneLC3->read(1))); 
+      SerialDual.print("LC1: " + String(EthaneLC1->read())); 
+      SerialDual.print("\tLC2: " + String(EthaneLC2->read()));
+      SerialDual.print("\tLC3: " + String(EthaneLC3->read())); 
       SerialDual.println();
       SerialDual.print("Nitrous: \t");
-      SerialDual.print("LC1: " + String(NitrousLC1->read(1))); 
-      SerialDual.print("\tLC2: " + String(NitrousLC2->read(1))); 
-      SerialDual.print("\tLC3: " + String(NitrousLC3->read(1))); 
+      SerialDual.print("LC1: " + String(NitrousLC1->read())); 
+      SerialDual.print("\tLC2: " + String(NitrousLC2->read())); 
+      SerialDual.print("\tLC3: " + String(NitrousLC3->read())); 
       SerialDual.println();
       SerialDual.print("Thrust: " + String(ThrustLC->read()));
       SerialDual.println();
@@ -120,7 +120,8 @@ void status(TransmissionType format = COMPRESSED) {
       // SerialDual.println("Reroute TC2: " + String(RerouteTC2->readHot()) + "F");
       // SerialDual.println("Reroute TC3: " + String(RerouteTC3->readHot()) + "F");
       // MBVs
-      SerialDual.println("Ethane MBV: " + String(EthaneMBV->getCurrentDegrees()));
+      SerialDual.println("Ethane MBV: " + String(EthaneMBV->isOpen() ? "OPEN" : "CLOSED"));
+      SerialDual.println("Nitrous MBV: " + String(NitrousMBV->isOpen() ? "OPEN" : "CLOSED"));
       break;
     }
 
@@ -140,13 +141,13 @@ void status(TransmissionType format = COMPRESSED) {
       
       if(time_absolute - LCLog.last_trigger_ms >= LCLog.interval_ms) {
         if (!print_current_poll) { SerialDual.print("DATA|"); SerialDual.print((time_elapsed/1000.0), 3); }
-        float lc1= EthaneLC1->read(1);
-        if (lc1 > 0.2 || EthaneLC2->read(1) < 0.3) {SerialDual.print("|LC_E1:");  SerialDual.print(lc1); }
-        SerialDual.print("|LC_E2:");  SerialDual.print(EthaneLC2->read(1));
-        SerialDual.print("|LC_E3:");  SerialDual.print(EthaneLC3->read(1));
-        SerialDual.print("|LC_N1:");  SerialDual.print(NitrousLC1->read(1));
-        SerialDual.print("|LC_N2:");  SerialDual.print(NitrousLC2->read(1));
-        SerialDual.print("|LC_N3:");  SerialDual.print(NitrousLC3->read(1));
+        float lc1= EthaneLC1->read();
+        if (lc1 > 0.2 || EthaneLC2->read() < 0.3) {SerialDual.print("|LC_E1:");  SerialDual.print(lc1); }
+        SerialDual.print("|LC_E2:");  SerialDual.print(EthaneLC2->read());
+        SerialDual.print("|LC_E3:");  SerialDual.print(EthaneLC3->read());
+        SerialDual.print("|LC_N1:");  SerialDual.print(NitrousLC1->read());
+        SerialDual.print("|LC_N2:");  SerialDual.print(NitrousLC2->read());
+        SerialDual.print("|LC_N3:");  SerialDual.print(NitrousLC3->read());
         SerialDual.print("|LC_T:");   SerialDual.print(ThrustLC->read());
         LCLog.last_trigger_ms = time_absolute - (time_absolute % LCLog.interval_ms);
         print_current_poll = true;
@@ -158,8 +159,8 @@ void status(TransmissionType format = COMPRESSED) {
         SerialDual.print("|EV:");     SerialDual.print(EthaneVent.state());
         SerialDual.print("|NRV:");    SerialDual.print(NitrousRunValve.state());
         SerialDual.print("|NV:");     SerialDual.print(NitrousVent.state());
-        SerialDual.print("|MBV_E:");  SerialDual.print(EthaneMBV->getCurrentDegrees());
-        SerialDual.print("|MBV_N:");  SerialDual.print(NitrousMBV->getCurrentDegrees());
+        SerialDual.print("|MBV_E:");  SerialDual.print(EthaneMBV->isOpen());
+        SerialDual.print("|MBV_N:");  SerialDual.print(NitrousMBV->isOpen());
         ValveLog.last_trigger_ms = time_absolute - (time_absolute % ValveLog.interval_ms);
         print_current_poll = true;
       }
@@ -200,12 +201,12 @@ void status(TransmissionType format = COMPRESSED) {
       
       if(time_absolute - LCLog.last_trigger_ms >= LCLog.interval_ms) {
         if (!print_current_poll) { SerialDual.print("DATA|"); SerialDual.print((time_elapsed/1000.0), 3); }
-        SerialDual.print("|LC_E1:");  SerialDual.print(EthaneLC1->read(1));
-        SerialDual.print("|LC_E2:");  SerialDual.print(EthaneLC2->read(1));
-        SerialDual.print("|LC_E3:");  SerialDual.print(EthaneLC3->read(1));
-        SerialDual.print("|LC_N1:");  SerialDual.print(NitrousLC1->read(1));
-        SerialDual.print("|LC_N2:");  SerialDual.print(NitrousLC2->read(1));
-        SerialDual.print("|LC_N3:");  SerialDual.print(NitrousLC3->read(1));
+        SerialDual.print("|LC_E1:");  SerialDual.print(EthaneLC1->read());
+        SerialDual.print("|LC_E2:");  SerialDual.print(EthaneLC2->read());
+        SerialDual.print("|LC_E3:");  SerialDual.print(EthaneLC3->read());
+        SerialDual.print("|LC_N1:");  SerialDual.print(NitrousLC1->read());
+        SerialDual.print("|LC_N2:");  SerialDual.print(NitrousLC2->read());
+        SerialDual.print("|LC_N3:");  SerialDual.print(NitrousLC3->read());
         SerialDual.print("|LC_T:");   SerialDual.print(ThrustLC->read());
         LCLog.last_trigger_ms = time_absolute - (time_absolute % LCLog.interval_ms);
         print_current_poll = true;
@@ -217,8 +218,8 @@ void status(TransmissionType format = COMPRESSED) {
         SerialDual.print("|EV:");     SerialDual.print(EthaneVent.state());
         SerialDual.print("|NRV:");    SerialDual.print(NitrousRunValve.state());
         SerialDual.print("|NV:");     SerialDual.print(NitrousVent.state());
-        SerialDual.print("|MBV_E:");  SerialDual.print(EthaneMBV->getCurrentDegrees());
-        SerialDual.print("|MBV_N:");  SerialDual.print(NitrousMBV->getCurrentDegrees());
+        SerialDual.print("|MBV_E:");  SerialDual.print(EthaneMBV->isOpen());
+        SerialDual.print("|MBV_N:");  SerialDual.print(NitrousMBV->isOpen());
         ValveLog.last_trigger_ms = time_absolute - (time_absolute % ValveLog.interval_ms);
         print_current_poll = true;
       }
@@ -316,36 +317,37 @@ void processCommand(float time_elapsed) {
   }
   
   // ball
-  else if (cmd.indexOf("ETHANE_MBV_") >= 0) {
-    String degrees = cmd.substring(11);
-    if(degrees.indexOf("N") >= 0) {
-      EthaneMBV->next_90();
-    } else if(degrees.toInt()) {
-      EthaneMBV->move_degrees(degrees.toInt());
-    }
+  else if (cmd.equalsIgnoreCase("ETHANE_MBV_OPEN")) {
+    EthaneMBV->open();
   }
-  else if (cmd.equalsIgnoreCase("ETHANE_MBV_RESET")) {
-    EthaneMBV->reset();
-    if(full_output) { SerialDual.print("Ethane MBV position reset to zero"); }
+  else if (cmd.equalsIgnoreCase("ETHANE_MBV_CLOSE")) {
+    EthaneMBV->close();
   }
-  else if (cmd.equalsIgnoreCase("ETHANE_MBV_STATUS")) {
-    EthaneMBV->status();
+  else if (cmd.indexOf("ETHANE_MBV_JOG_") >= 0) {
+    EthaneMBV->jog(cmd.substring(16).toInt());
   }
-  else if (cmd.indexOf("NITROUS_MBV_") >= 0) {
-    String degrees = cmd.substring(12);
-    if(degrees.indexOf("N") >= 0) {
-      NitrousMBV->next_90();
-    } else if(degrees.toInt()) {
-      NitrousMBV->move_degrees(degrees.toInt());
-    }
+  else if (cmd.equalsIgnoreCase("ETHANE_MBV_BRAKE")) {
+    EthaneMBV->brake();
   }
-  else if (cmd.equalsIgnoreCase("NITROUS_MBV_RESET")) {
-    NitrousMBV->reset();
-    if(full_output) { SerialDual.print("Nitrous MBV position reset to zero"); }
+  else if (cmd.equalsIgnoreCase("ETHANE_MBV_COAST")) {
+    EthaneMBV->coast();
   }
-  else if (cmd.equalsIgnoreCase("NITROUS_MBV_STATUS")) {
-    NitrousMBV->status();
+  else if (cmd.equalsIgnoreCase("NITROUS_MBV_OPEN")) {
+    NitrousMBV->open();
   }
+  else if (cmd.equalsIgnoreCase("NITROUS_MBV_CLOSE")) {
+    NitrousMBV->close();
+  }
+  else if (cmd.indexOf("NITROUS_MBV_JOG_") >= 0) {
+    NitrousMBV->jog(cmd.substring(16).toInt());
+  }
+  else if (cmd.equalsIgnoreCase("NITROUS_MBV_BRAKE")) {
+    NitrousMBV->brake();
+  }
+  else if (cmd.equalsIgnoreCase("NITROUS_MBV_COAST")) {
+    NitrousMBV->coast();
+  }
+  
   else if (cmd.equalsIgnoreCase("E_STOP")) {
     EMERGENCY_VENT();
   }
@@ -435,8 +437,8 @@ void setup()
   cmd.reserve(32);
   delay(2000);
 
-  EthaneMBV = new MBV(ETHANE_MBV_PIN, ETHANE_ENCODER_PINS);
-  NitrousMBV = new MBV(NITROUS_MBV_PIN, NITROUS_ENCODER_PINS);
+  EthaneMBV = new MBV(ETHANE_MBV_PINS, ETHANE_LIMIT_PINS);
+  NitrousMBV = new MBV(NITROUS_MBV_PINS, NITROUS_LIMIT_PINS);
 
   SerialDual.println("START1");
   EthaneLC1 = new LoadCell(ETHANE_LC1_PINS);
@@ -547,8 +549,8 @@ void loop()
       current_highest_redline--;
     }
 
-    for (Redline r : Redlines) {
-      int current_highest_redline = max(r.checkTrigger(current_highest_redline), current_highest_redline);
+    for (int i = 0; i < NUM_REDLINES; i++) {
+      current_highest_redline = max(Redlines[i].checkTrigger(current_highest_redline), current_highest_redline);
     }
 
     if (current_highest_redline > 0) {

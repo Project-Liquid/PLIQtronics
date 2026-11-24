@@ -1,23 +1,26 @@
 #include "procedures.h"
 
+#define OPEN true
+#define CLOSE false
+
 //============================REDLINES============================//
 
 // Trigger Conditions
 bool EthaneOverpressureCondition() { return EthaneUpstreamPT.readPressure() > ETHANE_PRESSURE_REDLINE; }
 bool NitrousOverpressureCondition() { return NitrousUpstreamPT.readPressure() > NITROUS_PRESSURE_REDLINE; }
-bool EthaneMBVCloseFailureCondition() { return; }  //Unessecary, controlled by cold flow/ static fire
-bool NitrousMBVCloseFailureCondition() { return; } //Unessecary, controlled by cold flow/ static fire
+bool EthaneMBVCloseFailureCondition() { return false; }  //Unessecary, controlled by cold flow/ static fire
+bool NitrousMBVCloseFailureCondition() { return false; } //Unessecary, controlled by cold flow/ static fire
 bool CombustionPropogationCondition() { 
-  return static_fire_steady && ((fabs((ReroutePT.readPressure()-ChamberPT.readPressure()))/ReroutePT.readPressure() >0.1)||
-   ((fabs(EthaneDownstreamPT.readPressure()-ChamberPT.readPressure()))/EthaneDownstreamPT.readPressure() >0.1)||
+  return static_fire_steady && ((fabs((ReroutePT.readPressure()-ChamberPT.readPressure()))/(ReroutePT.readPressure()+1E-12) >0.1)||
+    (fabs(EthaneDownstreamPT.readPressure()-ChamberPT.readPressure())/(EthaneDownstreamPT.readPressure()+1E-12) >0.1)||
     ((0.95*ReroutePT.readPressure() < ChamberPT.readPressure())) ||
-    ((0.95*EthaneDownstreamPT.readPressure() < ChamberPT.readPressure())));}
+    (0.95*EthaneDownstreamPT.readPressure() < ChamberPT.readPressure()));}
 bool InlineThermalDecompCondition() { return RerouteTC->readHot() > REROUTE_TC_REDLINE;}
-bool LostLoadCellCondition() { return; } //Unnecessary, operator control
-bool EthaneUnderweightCondition() { return EthaneLC1->readJoint(1) < ETHANE_WEIGHT_REDLINE; }
-bool NitrousUnderweightCondition() { return;} //Unnecessary, operator control
-bool EthaneOverweightCondition() { return; } //Unnecessary, operator control
-bool NitrousOverweightCondition() { return NitrousLC1->readJoint(1) > NITROUS_WEIGHT_REDLINE;}
+bool LostLoadCellCondition() { return false; } //Unnecessary, operator control
+bool EthaneUnderweightCondition() { return EthaneLC1->readJoint() < ETHANE_WEIGHT_REDLINE; }
+bool NitrousUnderweightCondition() { return false;} //Unnecessary, operator control
+bool EthaneOverweightCondition() { return false; } //Unnecessary, operator control
+bool NitrousOverweightCondition() { return NitrousLC1->readJoint() > NITROUS_WEIGHT_REDLINE;}
 
 // Redline Responses
 void EthaneOverpressureResponse() {
@@ -29,8 +32,8 @@ void EthaneOverpressureResponse() {
   EthaneRunValve.open();
 
   // VENT
-  EthaneVent.setNextActuation(0, true);
-  EthaneVent.setNextActuation(VENT_TIME, false);
+  EthaneVent.setNextActuation(0, OPEN);
+  EthaneVent.setNextActuation(VENT_TIME, CLOSE);
 }
 
 void NitrousOverpressureResponse() {
@@ -42,8 +45,8 @@ void NitrousOverpressureResponse() {
   NitrousRunValve.open();
 
   // VENT
-  NitrousVent.setNextActuation(0, true);
-  NitrousVent.setNextActuation(VENT_TIME, false);  
+  NitrousVent.setNextActuation(0, OPEN);
+  NitrousVent.setNextActuation(VENT_TIME, CLOSE);  
 }
 
 void EthaneMBVCloseFailureResponse() {
@@ -55,23 +58,23 @@ void NitrousMBVCloseFailureResponse() {
 void CombustionPropogationResponse() {
   neutralizeAll();
 
-  NitrousMBV->next_90();
+  NitrousMBV->close();
   NitrousRunValve.close();
-  EthaneMBV->next_90();
+  EthaneMBV->close();
   EthaneRunValve.close();
 
   NitrousVent.open();
-  NitrousVent.setNextActuation(3000, false);
+  NitrousVent.setNextActuation(3000, CLOSE);
   EthaneVent.open();
-  EthaneVent.setNextActuation(3000, false);
+  EthaneVent.setNextActuation(3000, CLOSE);
 }
 void InlineThermalDecompResponse() {
   neutralizeAll();
 
-  NitrousMBV->next_90();
+  NitrousMBV->close();
   NitrousRunValve.close();
-  EthaneMBV->setNextActuation(1000);
-  EthaneRunValve.setNextActuation(1000, false);
+  EthaneMBV->setNextActuation(1000, CLOSE);
+  EthaneRunValve.setNextActuation(1000, CLOSE);
 }
 void LostLoadCellResponse() {}
 void EthaneUnderweightResponse() {
@@ -104,10 +107,10 @@ void EMERGENCY_VENT() {
   neutralizeAll();
 
   if (EthaneMBV->isOpen()) {
-    EthaneMBV->next_90();
+    EthaneMBV->close();
   }
   if (NitrousMBV->isOpen()) {
-    NitrousMBV->next_90();
+    NitrousMBV->close();
   }
   ventEthane();
   ventNitrous();
@@ -115,14 +118,14 @@ void EMERGENCY_VENT() {
 
 void ventEthane() {
   EthaneRunValve.close();
-  EthaneVent.setNextActuation(VENT_DELAY, true);
-  EthaneVent.setNextActuation(VENT_DELAY + VENT_TIME, false);
+  EthaneVent.setNextActuation(VENT_DELAY, OPEN);
+  EthaneVent.setNextActuation(VENT_DELAY + VENT_TIME, CLOSE);
 }
 
 void ventNitrous() {
   NitrousRunValve.close();
-  NitrousVent.setNextActuation(VENT_DELAY, true);
-  NitrousVent.setNextActuation(VENT_DELAY + VENT_TIME, false);
+  NitrousVent.setNextActuation(VENT_DELAY, OPEN);
+  NitrousVent.setNextActuation(VENT_DELAY + VENT_TIME, CLOSE);
 }
 
 void coldFlowEthane(long duration_ms) {
@@ -131,17 +134,17 @@ void coldFlowEthane(long duration_ms) {
 
   EthaneRunValve.open();
 
-  EthaneMBV->setNextActuation(RUN_EQUALIZE_TIME);
-  EthaneMBV->setNextActuation(RUN_EQUALIZE_TIME + duration_ms);
+  EthaneMBV->setNextActuation(RUN_EQUALIZE_TIME, OPEN);
+  EthaneMBV->setNextActuation(RUN_EQUALIZE_TIME + duration_ms, CLOSE);
 
-  EthaneRunValve.setNextActuation(RUN_EQUALIZE_TIME + duration_ms, false);
+  EthaneRunValve.setNextActuation(RUN_EQUALIZE_TIME + duration_ms, CLOSE);
 }
 
 void coldFlowNitrous(long duration_ms) {
   NitrousRunValve.open();
 
-  NitrousMBV->setNextActuation(RUN_EQUALIZE_TIME);
-  NitrousMBV->setNextActuation(RUN_EQUALIZE_TIME + duration_ms);
+  NitrousMBV->setNextActuation(RUN_EQUALIZE_TIME, OPEN);
+  NitrousMBV->setNextActuation(RUN_EQUALIZE_TIME + duration_ms, CLOSE);
 
   NitrousRunValve.setNextActuation(RUN_EQUALIZE_TIME + duration_ms, false);
 }
@@ -154,18 +157,18 @@ void staticFire() {
   Ignitor.setNextActuation(5000, true);
 
   // if (ChamberTC->readHot() > 100) {
-    NitrousMBV->next_90();
-    EthaneMBV->setNextActuation(ETHANE_DELAY);
-    NitrousMBV->setNextActuation(ETHANE_DELAY + static_fire_duration_ms);
-    EthaneMBV->setNextActuation(ETHANE_DELAY + static_fire_duration_ms + BURNOUT_DELAY);
-    NitrousRunValve.setNextActuation(ETHANE_DELAY + static_fire_duration_ms, false);
-    EthaneRunValve.setNextActuation(ETHANE_DELAY + static_fire_duration_ms + BURNOUT_DELAY, false);
+    NitrousMBV->open();
+    EthaneMBV->setNextActuation(ETHANE_DELAY, OPEN);
+    NitrousMBV->setNextActuation(ETHANE_DELAY + static_fire_duration_ms, CLOSE);
+    EthaneMBV->setNextActuation(ETHANE_DELAY + static_fire_duration_ms + BURNOUT_DELAY, CLOSE);
+    NitrousRunValve.setNextActuation(ETHANE_DELAY + static_fire_duration_ms, CLOSE);
+    EthaneRunValve.setNextActuation(ETHANE_DELAY + static_fire_duration_ms + BURNOUT_DELAY, CLOSE);
     
     // Vent
-    EthaneVent.setNextActuation(ETHANE_DELAY + static_fire_duration_ms + BURNOUT_DELAY + 100 + VENT_DELAY, true);
-    EthaneVent.setNextActuation(ETHANE_DELAY + static_fire_duration_ms + BURNOUT_DELAY + 100 + VENT_DELAY + VENT_TIME, false);
-    NitrousVent.setNextActuation(ETHANE_DELAY + static_fire_duration_ms + BURNOUT_DELAY + VENT_DELAY + VENT_TIME + 1100, true);
-    NitrousVent.setNextActuation(ETHANE_DELAY + static_fire_duration_ms + BURNOUT_DELAY + VENT_DELAY + 2*VENT_TIME + 1100, false);
+    EthaneVent.setNextActuation(ETHANE_DELAY + static_fire_duration_ms + BURNOUT_DELAY + 100 + VENT_DELAY, OPEN);
+    EthaneVent.setNextActuation(ETHANE_DELAY + static_fire_duration_ms + BURNOUT_DELAY + 100 + VENT_DELAY + VENT_TIME, CLOSE);
+    NitrousVent.setNextActuation(ETHANE_DELAY + static_fire_duration_ms + BURNOUT_DELAY + VENT_DELAY + VENT_TIME + 1100, OPEN);
+    NitrousVent.setNextActuation(ETHANE_DELAY + static_fire_duration_ms + BURNOUT_DELAY + VENT_DELAY + 2*VENT_TIME + 1100, CLOSE);
 
     static_fire_initializing = false;
     static_fire_steady = false;

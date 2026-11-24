@@ -1,6 +1,6 @@
 #include "mbvContinuous.h"
 
-MBV::MBV(int pwm_pin, int encoder_pin_1, int encoder_pin_2)
+MBVContinuous::MBVContinuous(int pwm_pin, int encoder_pin_1, int encoder_pin_2)
   : pwm_pin(pwm_pin), enc(encoder_pin_1, encoder_pin_2) {
   current_position = 0;
   target_position = 0;
@@ -11,7 +11,7 @@ MBV::MBV(int pwm_pin, int encoder_pin_1, int encoder_pin_2)
   enc.write(0);
 }
 
-bool MBV::next_90() {
+bool MBVContinuous::next90() {
   // current_position = enc.read();
   if (moving) return false;
   float current_deg = current_position / counts_per_degree;
@@ -26,7 +26,7 @@ bool MBV::next_90() {
   return true;
 }
 
-bool MBV::move_degrees(float degrees) {
+bool MBVContinuous::moveDegrees(float degrees) {
   if(moving) return false;
   // current_position = enc.read();
   target_position = current_position + (long)(degrees * counts_per_degree);
@@ -35,7 +35,7 @@ bool MBV::move_degrees(float degrees) {
   return true;
 }
 
-void MBV::reset() {
+void MBVContinuous::reset() {
   enc.write(0);
   target_position = 0;
 }
@@ -43,19 +43,14 @@ void MBV::reset() {
 /**
  * Checks if at target position
  */
-void MBV::update() {
+void MBVContinuous::update() {
   current_position = enc.read();
   if (moving) {
     long error = target_position - current_position;
-    //Serial.print("Error: "); Serial.println(error);
 
     if (abs(error) <= STOP_ZONE || millis() - move_start_ms > TIMEOUT_MS) {
       analogWrite(pwm_pin, 0);
       moving = false;
-      //delay(250);
-      // Serial.print("Stopped at: ");
-      // Serial.print(current_position / counts_per_degree);
-      // Serial.println(" degrees");
     } else if (abs(error) < SLOW_ZONE) {
       analogWrite(pwm_pin, MOTOR_SLOW);
     } else {
@@ -64,7 +59,7 @@ void MBV::update() {
   }
 }
 
-void MBV::status() {
+void MBVContinuous::status() {
   Serial.print("Target: ");
   Serial.print(target_position);
   Serial.print(" (degrees: ");
@@ -78,22 +73,22 @@ void MBV::status() {
   Serial.println(")");
 }
 
-long MBV::getCurrentPosition() {
+long MBVContinuous::getCurrentPosition() {
   return current_position;
 }
 
-float MBV::getCurrentDegrees() {
+float MBVContinuous::getCurrentDegrees() {
   return getCurrentPosition() / counts_per_degree;
 } 
 
-bool MBV::isOpen() {
+bool MBVContinuous::isOpen() {
   if (((int)getCurrentDegrees() % 180) < 45 || ((int)getCurrentDegrees() % 180) > 135) {
     return false;
   }
   return true;
 }
 
-void MBV::setNextActuation(int delay, float degrees) {
+void MBVContinuous::setNextActuation(int delay, float degrees) {
   if (count < MAX_SCHEDULE) {
     schedule[tail] = { millis() + (unsigned long)delay, degrees };
     tail = (tail + 1) % MAX_SCHEDULE; // Wrap around if we hit the end of the array
@@ -103,20 +98,22 @@ void MBV::setNextActuation(int delay, float degrees) {
   }
 }
 
-void MBV::checkScheduledActuation() {
+void MBVContinuous::checkScheduledActuation() {
   if (count > 0 && millis() >= schedule[head].trigger_ms) {
-    next_90();
+    next90();
     head = (head + 1) % MAX_SCHEDULE; // Move the head forward to "erase" the task
     count--;
   }
 }
 
-void MBV::clearSchedule() {
+void MBVContinuous::clearSchedule() {
   head = 0;
   tail = 0;
   count = 0;
 }
 
-void MBV::neutralize() {
+void MBVContinuous::neutralize() {
   clearSchedule();
+  analogWrite(pwm_pin, 0);
+  moving = false;
 }

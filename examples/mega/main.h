@@ -3,7 +3,7 @@
 
 #include "transducer.h"
 #include "relay.h"
-#include "mbvContinuous.h"
+#include "mbv.h"
 #include "loadCell.h"
 #include "thermocouple.h"
 #include "heater.h"
@@ -32,10 +32,10 @@
 #define NITROUS_RUN_PIN  36
 #define NITROUS_VENT_PIN 40
 
-#define ETHANE_MBV_PIN  6
-#define NITROUS_MBV_PIN 7
-#define ETHANE_ENCODER_PINS  44, 42
-#define NITROUS_ENCODER_PINS 38, 48
+#define ETHANE_MBV_PINS  1, 2, 3
+#define NITROUS_MBV_PINS 1, 2, 3
+#define ETHANE_LIMIT_PINS  44, 42
+#define NITROUS_LIMIT_PINS 38, 48
 
 #define ETHANE_LC1_PINS   22, 23
 #define ETHANE_LC2_PINS   24, 25
@@ -53,7 +53,7 @@
 
 #define IGNITOR_PIN 39
 
-// Test Procedure Timings
+// Test Procedure Timings (ms)
 #define VENT_DELAY              1000
 #define VENT_TIME               3000
 #define RUN_EQUALIZE_TIME       1000
@@ -62,9 +62,11 @@
 #define OVERPRESSURE_VENT_TIME  10000
 
 // Redlines
-#define ETHANE_PRESSURE_REDLINE   1100
-#define NITROUS_PRESSURE_REDLINE  1100
-#define REROUTE_TC_REDLINE 550
+#define NUM_REDLINES 11
+
+#define ETHANE_PRESSURE_REDLINE   1100  // PSIG
+#define NITROUS_PRESSURE_REDLINE  1100  // PSIG
+#define REROUTE_TC_REDLINE 550          // °C
 
 #define ETHANE_OVERPRESSURE_PRIORITY        5
 #define NITROUS_OVERPRESSURE_PRIORITY       4

@@ -12,22 +12,37 @@ private:
     int close_limit_pin;
 
     int speed;
-    bool forward;
-    // enum Target { OPEN, CLOSE, NONE };
-    // Target target = NONE;
-    int target;
+    bool moving;
+    
+    // --- Circular Buffer Implementation ---
+    static const int MAX_SCHEDULE = 10; // Adjust this limit as needed
+
+    struct ScheduledActuation {
+        unsigned long trigger_ms;
+        bool open; // true for open, false for close
+    };
+    
+    ScheduledActuation schedule[MAX_SCHEDULE];
+    int head = 0;  // Index of the oldest task (read point)
+    int tail = 0;  // Index of the newest task (write point)
+    int count = 0; // Current number of tasks in the queue
 
 public:
     MBV(int speed_pin, int dir_pin_1, int dir_pin_2, int open_limit_pin, int close_limit_pin);
     void setSpeed(int speed);
-    void setDirection(bool forward);
     void brake();
     void coast();
-    void run();
+    void update();
     void open();
     void close();
     void jog(int speed);
-    void check_limits();
+    void checkLimits();
+    bool isOpen();
+    bool isClosed();
+    void setNextActuation(int delay, bool open);
+    void checkScheduledActuation();
+    void clearSchedule();
+    void neutralize();
 };
 
 #endif // MBV_H

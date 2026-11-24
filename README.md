@@ -81,8 +81,8 @@ transducer circuit before using the result.
 |---|---|---|
 | `transducer.h` / `Transducer` | Analog pressure transducer conversion | `readPressure()`, `status()`, `value()`, `barToPSI()`, `PSIToBar()` |
 | `relay.h` / `Relay` | Digital output relay with a timed actuation queue | `open()`, `close()`, `toggle()`, `state()`, `setNextActuation()`, `checkScheduledActuation()`, `clearSchedule()`, `neutralize()` |
-| `mbv.h` / `MBV` | Directional motor control with limit switches | `open()`, `close()`, `jog()`, `setSpeed()`, `setDirection()`, `run()`, `brake()`, `coast()`, `setNextActuation()`, `checkScheduledActuation()`, `check_limits()` |
-| `mbvContinuous.h` / `MBV` | Encoder-based motor positioning | `move_degrees()`, `next_90()`, `update()`, `reset()`, `getCurrentPosition()`, `getCurrentDegrees()`, `isOpen()`, `setNextActuation()`, `checkScheduledActuation()` |
+| `mbv.h` / `MBV` | Directional motor control with limit switches | `open()`, `close()`, `jog()`, `setSpeed()`, `setDirection()`, `update()`, `brake()`, `coast()`, `setNextActuation()`, `checkScheduledActuation()`, `checkLimits()` |
+| `mbvContinuous.h` / `MBVContinuous` | Encoder-based motor positioning | `moveDegrees()`, `next90()`, `update()`, `reset()`, `getCurrentPosition()`, `getCurrentDegrees()`, `isOpen()`, `setNextActuation()`, `checkScheduledActuation()` |
 | `loadCell.h` / `LoadCell` | HX711 load-cell measurement and calibration | `read()`, `getAverage()`, `calibrateCell()`, `setCalFactor()`, `tare()`, `join()`, `readJoint()` |
 | `thrustCell.h` / `ThrustCell` | Qwiic Scale NAU7802 measurement and calibration | `read()`, `getAverageReading()`, `calibrate()`, `setCalFactor()`, `tare()` |
 | `thermocouple.h` / `Thermocouple` | MCP960x thermocouple and ambient readings | `checkConnection()`, `readHot()`, `readCold()`, `readADC()`, `cToF()` |

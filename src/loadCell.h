@@ -20,10 +20,10 @@ public:
   float calibrateCell(float knownWeight);
   void setCalFactor(float calFactor);
   void tare();
-  float read(int samples = 1);
+  float read();
   static void calibrateCells(LoadCell &scale1, LoadCell &scale2, LoadCell &scale3);
   void join(LoadCell* LC2, LoadCell* LC3);
-  float readJoint(int samples = 1);
+  float readJoint();
 };
 
 #endif

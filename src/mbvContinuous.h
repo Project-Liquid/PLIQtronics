@@ -4,7 +4,7 @@
 #include <Arduino.h>
 #include <Encoder.h>
 
-class MBV {
+class MBVContinuous {
 private:
   int pwm_pin;
   long target_position;
@@ -40,9 +40,9 @@ private:
   int count = 0; // Current number of tasks in the queue
 
 public:
-  MBV(int pwm_pin, int encoder_pin_1, int encoder_pin_2);
-  bool next_90();
-  bool move_degrees(float degrees);
+  MBVContinuous(int pwm_pin, int encoder_pin_1, int encoder_pin_2);
+  bool next90();
+  bool moveDegrees(float degrees);
   void reset();
   void update();
   void status();

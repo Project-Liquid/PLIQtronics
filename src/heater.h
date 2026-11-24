@@ -13,6 +13,7 @@ private:
 
 public:
   Heater(int relay_pin, Transducer* PT);
+  void begin();
   void setTarget(float target, float threshold_error = 10);
   bool isOn();
   void on();

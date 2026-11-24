@@ -2,6 +2,9 @@
 
 Thermocouple::Thermocouple(int I2C_ADDRESS) {
   this->I2C_ADDRESS = I2C_ADDRESS;
+}
+
+void Thermocouple::begin() {
   checkConnection();
   mcp.setThermocoupleType(MCP9600_TYPE_K);
 }

@@ -2,6 +2,9 @@
 
 Heater::Heater(int relay_pin, Transducer* PT) 
   : relay_pin(relay_pin), PT(PT) {
+}
+
+void Heater::begin() {
   pinMode(relay_pin, OUTPUT);
   off();
 }

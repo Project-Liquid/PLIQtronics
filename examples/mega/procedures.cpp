@@ -15,12 +15,12 @@ bool CombustionPropogationCondition() {
     (fabs(EthaneDownstreamPT.readPressure()-ChamberPT.readPressure())/(EthaneDownstreamPT.readPressure()+1E-12) >0.1)||
     ((0.95*ReroutePT.readPressure() < ChamberPT.readPressure())) ||
     (0.95*EthaneDownstreamPT.readPressure() < ChamberPT.readPressure()));}
-bool InlineThermalDecompCondition() { return RerouteTC->readHot() > REROUTE_TC_REDLINE;}
+bool InlineThermalDecompCondition() { return RerouteTC.readHot() > REROUTE_TC_REDLINE;}
 bool LostLoadCellCondition() { return false; } //Unnecessary, operator control
-bool EthaneUnderweightCondition() { return EthaneLC1->readJoint() < ETHANE_WEIGHT_REDLINE; }
+bool EthaneUnderweightCondition() { return EthaneLC1.readJoint() < ETHANE_WEIGHT_REDLINE; }
 bool NitrousUnderweightCondition() { return false;} //Unnecessary, operator control
 bool EthaneOverweightCondition() { return false; } //Unnecessary, operator control
-bool NitrousOverweightCondition() { return NitrousLC1->readJoint() > NITROUS_WEIGHT_REDLINE;}
+bool NitrousOverweightCondition() { return NitrousLC1.readJoint() > NITROUS_WEIGHT_REDLINE;}
 
 // Redline Responses
 void EthaneOverpressureResponse() {
@@ -96,10 +96,10 @@ void neutralizeAll() {
   NitrousRunValve.neutralize();
   EthaneMBV.neutralize();
   NitrousMBV.neutralize();
-  EthaneHeater1->off();
-  EthaneHeater2->off();
-  NitrousHeater1->off();
-  NitrousHeater2->off();
+  EthaneHeater1.off();
+  EthaneHeater2.off();
+  NitrousHeater1.off();
+  NitrousHeater2.off();
 }
 
 void EMERGENCY_VENT() {
@@ -156,7 +156,7 @@ void staticFire() {
 
   Ignitor.setNextActuation(5000, true);
 
-  // if (ChamberTC->readHot() > 100) {
+  // if (ChamberTC.readHot() > 100) {
     NitrousMBV.open();
     EthaneMBV.setNextActuation(ETHANE_DELAY, OPEN);
     NitrousMBV.setNextActuation(ETHANE_DELAY + static_fire_duration_ms, CLOSE);

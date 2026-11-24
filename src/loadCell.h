@@ -15,7 +15,8 @@ private:
   float raw = 0;
 
 public:
-  LoadCell(int DT_PIN, int SCK_PIN, int gain = 128);
+  LoadCell(int gain = 128);
+  void begin(int DT_PIN, int SCK_PIN);
   float getAverage(int samples = 100);
   float calibrateCell(float knownWeight);
   void setCalFactor(float calFactor);

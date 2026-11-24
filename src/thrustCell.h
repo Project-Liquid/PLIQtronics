@@ -13,6 +13,7 @@ private:
 
 public:
   ThrustCell();
+  void begin();
   long getAverageReading(int samples = 10);
   double read(int samples = 1);
   void calibrate();

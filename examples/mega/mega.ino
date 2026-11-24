@@ -43,24 +43,23 @@ Relay Ignitor(IGNITOR_PIN);
 MBV EthaneMBV(ETHANE_MBV_PINS, ETHANE_LIMIT_PINS); // 69
 MBV NitrousMBV(NITROUS_MBV_PINS, NITROUS_LIMIT_PINS);
 SerialDualClass SerialDual(Serial, Serial2); // 10
+LoadCell EthaneLC1;
+LoadCell EthaneLC2;
+LoadCell EthaneLC3;
+LoadCell NitrousLC1;
+LoadCell NitrousLC2;
+LoadCell NitrousLC3;
+ThrustCell ThrustLC;
+Heater EthaneHeater1(ETHANE_HEATER_1_PIN, &EthaneUpstreamPT);
+Heater EthaneHeater2(ETHANE_HEATER_2_PIN, &EthaneDownstreamPT);
+Heater NitrousHeater1(NITROUS_HEATER_1_PIN, &NitrousUpstreamPT);
+Heater NitrousHeater2(NITROUS_HEATER_2_PIN, &NitrousDownstreamPT);
+Thermocouple RerouteTC(0x66);
+Thermocouple ChamberTC(0x65);
+Thermocouple RerouteTC3(0x67);
+//ADS1118* ChamberTC = nullptr;
 CmdBuffer serialBuf; // 9
 CmdBuffer serial2Buf;
-
-LoadCell* EthaneLC2 = nullptr;
-LoadCell* EthaneLC1 = nullptr;
-LoadCell* EthaneLC3 = nullptr;
-LoadCell* NitrousLC1 = nullptr;
-LoadCell* NitrousLC2 = nullptr;
-LoadCell* NitrousLC3 = nullptr;
-ThrustCell* ThrustLC = nullptr;
-Heater* EthaneHeater1 = nullptr;
-Heater* EthaneHeater2 = nullptr;
-Heater* NitrousHeater1 = nullptr;
-Heater* NitrousHeater2 = nullptr;
-Thermocouple* RerouteTC = nullptr;
-Thermocouple* ChamberTC = nullptr;
-Thermocouple* RerouteTC3 = nullptr;
-//ADS1118* ChamberTC = nullptr;
 
 /** TODO: MAKE ARRAY INDEXED BY PRIORITY */
 Redline Redlines[NUM_REDLINES] = {
@@ -101,24 +100,24 @@ void status(TransmissionType format = COMPRESSED) {
       SerialDual.print("Reroute: \t");  SerialDual.print(ReroutePT.status());
       // Load Cells
       SerialDual.print("Ethane: \t");
-      SerialDual.print("LC1: ");  SerialDual.print(EthaneLC1->read()); 
-      SerialDual.print("\tLC2: ");  SerialDual.print(EthaneLC2->read());
-      SerialDual.print("\tLC3: ");  SerialDual.print(EthaneLC3->read()); 
+      SerialDual.print("LC1: ");  SerialDual.print(EthaneLC1.read()); 
+      SerialDual.print("\tLC2: ");  SerialDual.print(EthaneLC2.read());
+      SerialDual.print("\tLC3: ");  SerialDual.print(EthaneLC3.read()); 
       SerialDual.println();
       SerialDual.print("Nitrous: \t");
-      SerialDual.print("LC1: ");  SerialDual.print(NitrousLC1->read()); 
-      SerialDual.print("\tLC2: ");  SerialDual.print(NitrousLC2->read()); 
-      SerialDual.print("\tLC3: ");  SerialDual.print(NitrousLC3->read()); 
+      SerialDual.print("LC1: ");  SerialDual.print(NitrousLC1.read()); 
+      SerialDual.print("\tLC2: ");  SerialDual.print(NitrousLC2.read()); 
+      SerialDual.print("\tLC3: ");  SerialDual.print(NitrousLC3.read()); 
       SerialDual.println();
-      SerialDual.print("Thrust: "); SerialDual.print(ThrustLC->read());
+      SerialDual.print("Thrust: "); SerialDual.print(ThrustLC.read());
       SerialDual.println();
       // Tank Heaters
-      SerialDual.print("Ethane Tank 1: "); SerialDual.print(EthaneHeater1->isOn() ? "ON" : "OFF");
-      SerialDual.print("Nitrous Tank 1: "); SerialDual.print(NitrousHeater1->isOn() ? "ON" : "OFF");
+      SerialDual.print("Ethane Tank 1: "); SerialDual.print(EthaneHeater1.isOn() ? "ON" : "OFF");
+      SerialDual.print("Nitrous Tank 1: "); SerialDual.print(NitrousHeater1.isOn() ? "ON" : "OFF");
       // Thermocouple
-      // SerialDual.println("Reroute TC: ");  SerialDual.print(RerouteTC->readHot());  SerialDual.print("F");
-      // SerialDual.println("Reroute TC2: ");  SerialDual.print(RerouteTC2->readHot());  SerialDual.print("F");
-      // SerialDual.println("Reroute TC3: ");  SerialDual.print(RerouteTC3->readHot());  SerialDual.print("F");
+      // SerialDual.println("Reroute TC: ");  SerialDual.print(RerouteTC.readHot());  SerialDual.print("F");
+      // SerialDual.println("Reroute TC2: ");  SerialDual.print(RerouteTC2.readHot());  SerialDual.print("F");
+      // SerialDual.println("Reroute TC3: ");  SerialDual.print(RerouteTC3.readHot());  SerialDual.print("F");
       // MBVs
       SerialDual.println("Ethane MBV: ");  SerialDual.print(EthaneMBV.isOpen() ? "OPEN" : "CLOSED");
       SerialDual.println("Nitrous MBV: ");  SerialDual.print(NitrousMBV.isOpen() ? "OPEN" : "CLOSED");
@@ -141,14 +140,14 @@ void status(TransmissionType format = COMPRESSED) {
       
       if(time_absolute - LCLog.last_trigger_ms >= LCLog.interval_ms) {
         if (!print_current_poll) { SerialDual.print("DATA|"); SerialDual.print((time_elapsed/1000.0), 3); }
-        float lc1= EthaneLC1->read();
-        if (lc1 > 0.2 || EthaneLC2->read() < 0.3) {SerialDual.print("|LC_E1:");  SerialDual.print(lc1); }
-        SerialDual.print("|LC_E2:");  SerialDual.print(EthaneLC2->read());
-        SerialDual.print("|LC_E3:");  SerialDual.print(EthaneLC3->read());
-        SerialDual.print("|LC_N1:");  SerialDual.print(NitrousLC1->read());
-        SerialDual.print("|LC_N2:");  SerialDual.print(NitrousLC2->read());
-        SerialDual.print("|LC_N3:");  SerialDual.print(NitrousLC3->read());
-        SerialDual.print("|LC_T:");   SerialDual.print(ThrustLC->read());
+        float lc1= EthaneLC1.read();
+        if (lc1 > 0.2 || EthaneLC2.read() < 0.3) {SerialDual.print("|LC_E1:");  SerialDual.print(lc1); }
+        SerialDual.print("|LC_E2:");  SerialDual.print(EthaneLC2.read());
+        SerialDual.print("|LC_E3:");  SerialDual.print(EthaneLC3.read());
+        SerialDual.print("|LC_N1:");  SerialDual.print(NitrousLC1.read());
+        SerialDual.print("|LC_N2:");  SerialDual.print(NitrousLC2.read());
+        SerialDual.print("|LC_N3:");  SerialDual.print(NitrousLC3.read());
+        SerialDual.print("|LC_T:");   SerialDual.print(ThrustLC.read());
         LCLog.last_trigger_ms = time_absolute - (time_absolute % LCLog.interval_ms);
         print_current_poll = true;
       }
@@ -167,18 +166,18 @@ void status(TransmissionType format = COMPRESSED) {
 
       if(time_absolute - TCLog.last_trigger_ms >= TCLog.interval_ms) {
         if (!print_current_poll) { SerialDual.print("DATA|"); SerialDual.print((time_elapsed/1000.0), 3); }
-        SerialDual.print("|TC_C:"); SerialDual.print(ChamberTC->readHot());
-        SerialDual.print("|TC_R:"); SerialDual.print(RerouteTC->readHot());
+        SerialDual.print("|TC_C:"); SerialDual.print(ChamberTC.readHot());
+        SerialDual.print("|TC_R:"); SerialDual.print(RerouteTC.readHot());
         TCLog.last_trigger_ms = time_absolute - (time_absolute % TCLog.interval_ms);
         print_current_poll = true;
       }
 
       if(time_absolute - HeaterPoll.last_trigger_ms >= HeaterPoll.interval_ms){
         if (!print_current_poll) {SerialDual.print("DATA|"); SerialDual.print ((time_elapsed/1000.0),3);}
-        SerialDual.print("|NH_1:"); SerialDual.print(NitrousHeater1->isOn());
-        SerialDual.print("|NH_2:"); SerialDual.print(NitrousHeater2->isOn());
-        SerialDual.print("|EH_1:"); SerialDual.print(EthaneHeater1->isOn());
-        SerialDual.print("|EH_2:"); SerialDual.print(EthaneHeater2->isOn());
+        SerialDual.print("|NH_1:"); SerialDual.print(NitrousHeater1.isOn());
+        SerialDual.print("|NH_2:"); SerialDual.print(NitrousHeater2.isOn());
+        SerialDual.print("|EH_1:"); SerialDual.print(EthaneHeater1.isOn());
+        SerialDual.print("|EH_2:"); SerialDual.print(EthaneHeater2.isOn());
         HeaterPoll.last_trigger_ms = time_absolute - (time_absolute % HeaterPoll.interval_ms);
         print_current_poll = true;
       }
@@ -201,13 +200,13 @@ void status(TransmissionType format = COMPRESSED) {
       
       if(time_absolute - LCLog.last_trigger_ms >= LCLog.interval_ms) {
         if (!print_current_poll) { SerialDual.print("DATA|"); SerialDual.print((time_elapsed/1000.0), 3); }
-        SerialDual.print("|LC_E1:");  SerialDual.print(EthaneLC1->read());
-        SerialDual.print("|LC_E2:");  SerialDual.print(EthaneLC2->read());
-        SerialDual.print("|LC_E3:");  SerialDual.print(EthaneLC3->read());
-        SerialDual.print("|LC_N1:");  SerialDual.print(NitrousLC1->read());
-        SerialDual.print("|LC_N2:");  SerialDual.print(NitrousLC2->read());
-        SerialDual.print("|LC_N3:");  SerialDual.print(NitrousLC3->read());
-        SerialDual.print("|LC_T:");   SerialDual.print(ThrustLC->read());
+        SerialDual.print("|LC_E1:");  SerialDual.print(EthaneLC1.read());
+        SerialDual.print("|LC_E2:");  SerialDual.print(EthaneLC2.read());
+        SerialDual.print("|LC_E3:");  SerialDual.print(EthaneLC3.read());
+        SerialDual.print("|LC_N1:");  SerialDual.print(NitrousLC1.read());
+        SerialDual.print("|LC_N2:");  SerialDual.print(NitrousLC2.read());
+        SerialDual.print("|LC_N3:");  SerialDual.print(NitrousLC3.read());
+        SerialDual.print("|LC_T:");   SerialDual.print(ThrustLC.read());
         LCLog.last_trigger_ms = time_absolute - (time_absolute % LCLog.interval_ms);
         print_current_poll = true;
       }
@@ -226,8 +225,8 @@ void status(TransmissionType format = COMPRESSED) {
 
       if(time_absolute - TCLog.last_trigger_ms >= TCLog.interval_ms) {
         if (!print_current_poll) { SerialDual.print("DATA|"); SerialDual.print((time_elapsed/1000.0), 3); }
-        // // SerialDual.print("|TC_C:"); SerialDual.print((ChamberTC->getMilliVolts()/0.041) + ChamberTC->getTemperature());
-        // SerialDual.print("|TC_R:"); SerialDual.print(RerouteTC->readHot());
+        // // SerialDual.print("|TC_C:"); SerialDual.print((ChamberTC.getMilliVolts()/0.041) + ChamberTC.getTemperature());
+        // SerialDual.print("|TC_R:"); SerialDual.print(RerouteTC.readHot());
         TCLog.last_trigger_ms = time_absolute - (time_absolute % TCLog.interval_ms);
         print_current_poll = true;
       }
@@ -382,38 +381,38 @@ void processCommand(float time_elapsed) {
     }
   }
   else if (cmd.equalsIgnoreCase("ETHANE_LC_TARE")) {
-    EthaneLC1->tare();
-    EthaneLC2->tare();
-    EthaneLC3->tare();
+    EthaneLC1.tare();
+    EthaneLC2.tare();
+    EthaneLC3.tare();
   }
   else if (cmd.equalsIgnoreCase("NITROUS_LC_TARE")) {
-    NitrousLC1->tare();
-    NitrousLC2->tare();
-    NitrousLC3->tare();
+    NitrousLC1.tare();
+    NitrousLC2.tare();
+    NitrousLC3.tare();
   } else if (cmd.equalsIgnoreCase("THRUST_LC_TARE")) {
-    ThrustLC->tare();
+    ThrustLC.tare();
   } else if (cmd.equalsIgnoreCase("NITROUS_H1_ON")) {
-    NitrousHeater1->on();
+    NitrousHeater1.on();
   } else if (cmd.equalsIgnoreCase("NITROUS_H1_OFF")) {
-    NitrousHeater1->off();
+    NitrousHeater1.off();
   } else if (cmd.equalsIgnoreCase("NITROUS_H2_ON")) {
-    NitrousHeater2->on();
+    NitrousHeater2.on();
   } else if (cmd.equalsIgnoreCase("NITROUS_H2_OFF")) {
-    NitrousHeater2->off();
+    NitrousHeater2.off();
   } else if (cmd.equalsIgnoreCase("ETHANE_H1_ON")) {
-    EthaneHeater1->on();
+    EthaneHeater1.on();
   } else if (cmd.equalsIgnoreCase("ETHANE_H1_OFF")) {
-    EthaneHeater1->off();
+    EthaneHeater1.off();
   } else if (cmd.equalsIgnoreCase("ETHANE_H2_ON")) {
-    EthaneHeater2->on();
+    EthaneHeater2.on();
   } else if (cmd.equalsIgnoreCase("ETHANE_H2_OFF")) {
-    EthaneHeater2->off();
+    EthaneHeater2.off();
   } else if (cmd.equalsIgnoreCase("HEATERS_OFF")) {
     heaters_active = false;
-    EthaneHeater1->off();
-    EthaneHeater2->off();
-    NitrousHeater1->off();
-    NitrousHeater2->off();
+    EthaneHeater1.off();
+    EthaneHeater2.off();
+    NitrousHeater1.off();
+    NitrousHeater2.off();
   }
 
   else {
@@ -441,49 +440,49 @@ void setup()
   NitrousMBV.begin();
 
   SerialDual.println("START1");
-  EthaneLC1 = new LoadCell(ETHANE_LC1_PINS);
-  EthaneLC2 = new LoadCell(ETHANE_LC2_PINS);
-  EthaneLC3 = new LoadCell(ETHANE_LC3_PINS);
-  NitrousLC1 = new LoadCell(NITROUS_LC1_PINS);
-  NitrousLC2 = new LoadCell(NITROUS_LC2_PINS);
-  NitrousLC3 = new LoadCell(NITROUS_LC3_PINS);
+  EthaneLC1.begin(ETHANE_LC1_PINS);
+  EthaneLC2.begin(ETHANE_LC2_PINS);
+  EthaneLC3.begin(ETHANE_LC3_PINS);
+  NitrousLC1.begin(NITROUS_LC1_PINS);
+  NitrousLC2.begin(NITROUS_LC2_PINS);
+  NitrousLC3.begin(NITROUS_LC3_PINS);
 
-  EthaneLC1->setCalFactor(43.27);
-  EthaneLC2->setCalFactor(43.92);
-  EthaneLC3->setCalFactor(42.46);
-  NitrousLC1->setCalFactor(51.225);
-  NitrousLC2->setCalFactor(51.225);
-  NitrousLC3->setCalFactor(51.225);
-  EthaneLC1->join(EthaneLC2, EthaneLC3);
-  NitrousLC1->join(NitrousLC2, NitrousLC3);
+  EthaneLC1.setCalFactor(43.27);
+  EthaneLC2.setCalFactor(43.92);
+  EthaneLC3.setCalFactor(42.46);
+  NitrousLC1.setCalFactor(51.225);
+  NitrousLC2.setCalFactor(51.225);
+  NitrousLC3.setCalFactor(51.225);
+  EthaneLC1.join(&EthaneLC2, &EthaneLC3);
+  NitrousLC1.join(&NitrousLC2, &NitrousLC3);
 
-  ThrustLC = new ThrustCell();
-  ThrustLC->setCalFactor(-5.83);
+  ThrustLC.begin();
+  ThrustLC.setCalFactor(-5.83);
 
 
-  RerouteTC = new Thermocouple(0x66);
-  ChamberTC = new Thermocouple(0x65);
-  RerouteTC3 = new Thermocouple(0x67);
+  RerouteTC.begin();
+  ChamberTC.begin();
+  RerouteTC3.begin();
 
   // pinMode(CHAMBER_TC_PIN, OUTPUT);      // Force SS high to lock Mega in master mode
   // digitalWrite(CHAMBER_TC_PIN, HIGH);
   // ChamberTC = new ADS1118(CHAMBER_TC_PIN);
   // delay(100);
 
-  // ChamberTC->begin();
-  // ChamberTC->setSamplingRate(ChamberTC->RATE_16SPS);
-  // ChamberTC->setInputSelected(ChamberTC->DIFF_0_1);
-  // ChamberTC->setFullScaleRange(ChamberTC->FSR_0256);
+  // ChamberTC.begin();
+  // ChamberTC.setSamplingRate(ChamberTC.RATE_16SPS);
+  // ChamberTC.setInputSelected(ChamberTC.DIFF_0_1);
+  // ChamberTC.setFullScaleRange(ChamberTC.FSR_0256);
 
-  EthaneHeater1 = new Heater(ETHANE_HEATER_1_PIN, &EthaneUpstreamPT);
-  EthaneHeater2 = new Heater(ETHANE_HEATER_2_PIN, &EthaneUpstreamPT);
-  NitrousHeater1 = new Heater(NITROUS_HEATER_1_PIN, &NitrousUpstreamPT);
-  NitrousHeater2 = new Heater(NITROUS_HEATER_2_PIN, &NitrousUpstreamPT);
+  EthaneHeater1.begin();
+  EthaneHeater2.begin();
+  NitrousHeater1.begin();
+  NitrousHeater2.begin();
 
-  EthaneHeater1->setTarget(ETHANE_TARGET_PRESSURE);
-  EthaneHeater2->setTarget(ETHANE_TARGET_PRESSURE);
-  NitrousHeater1->setTarget(NITROUS_TARGET_PRESSURE);
-  NitrousHeater2->setTarget(NITROUS_TARGET_PRESSURE);
+  EthaneHeater1.setTarget(ETHANE_TARGET_PRESSURE);
+  EthaneHeater2.setTarget(ETHANE_TARGET_PRESSURE);
+  NitrousHeater1.setTarget(NITROUS_TARGET_PRESSURE);
+  NitrousHeater2.setTarget(NITROUS_TARGET_PRESSURE);
   
   delay(1200);
   if (print_data) {
@@ -533,10 +532,10 @@ void loop()
   }
 
   if(heaters_active && time_absolute - HeaterPoll.last_trigger_ms >= HeaterPoll.interval_ms) {
-    EthaneHeater1->update();
-    EthaneHeater2->update();
-    NitrousHeater1->update();
-    NitrousHeater2->update();
+    EthaneHeater1.update();
+    EthaneHeater2.update();
+    NitrousHeater1.update();
+    NitrousHeater2.update();
 
     HeaterPoll.last_trigger_ms = time_absolute - (time_absolute % HeaterPoll.interval_ms);
   }

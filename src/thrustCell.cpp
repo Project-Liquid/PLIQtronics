@@ -1,8 +1,9 @@
 #include "thrustCell.h"
 
-ThrustCell::ThrustCell() {
-  Wire.begin();
+ThrustCell::ThrustCell() {}
 
+void ThrustCell::begin() {
+  Wire.begin();
   if (!scale.begin()) {
     Serial.println("NAU7802 not found!");
     while (1);

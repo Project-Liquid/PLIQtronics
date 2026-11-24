@@ -13,8 +13,9 @@
 #include "procedures.h"
 #include "cmdBuffer.h"
 
-#include "ADS1118.h"
-#include <SPI.h>
+// Used for chamber thermocouple, not yet implemented
+//#include "ADS1118.h"
+//#include <SPI.h>
 
 //===========================CONSTANTS============================//
 #define BAUD_RATE 57600
@@ -156,7 +157,6 @@ extern PollInterval RedlinePoll;
 extern PollInterval ValveSchedulePoll;
 extern PollInterval HeaterPoll;
 
-
 extern float ETHANE_WEIGHT_REDLINE;
 extern float NITROUS_WEIGHT_REDLINE;
 
@@ -181,26 +181,25 @@ extern MBV EthaneMBV;
 extern MBV NitrousMBV;
 
 // Load Cells
-extern LoadCell* EthaneLC2;
-extern LoadCell* EthaneLC1;
-extern LoadCell* EthaneLC3;
-extern LoadCell* NitrousLC1;
-extern LoadCell* NitrousLC2;
-extern LoadCell* NitrousLC3;
+extern LoadCell EthaneLC2;
+extern LoadCell EthaneLC1;
+extern LoadCell EthaneLC3;
+extern LoadCell NitrousLC1;
+extern LoadCell NitrousLC2;
+extern LoadCell NitrousLC3;
 
-extern ThrustCell* ThrustLC;
+extern ThrustCell ThrustLC;
 
 // Tank Heaters
-extern Heater* EthaneHeater1;
-extern Heater* EthaneHeater2;
-extern Heater* NitrousHeater1;
-extern Heater* NitrousHeater2;
+extern Heater EthaneHeater1;
+extern Heater EthaneHeater2;
+extern Heater NitrousHeater1;
+extern Heater NitrousHeater2;
 
 // Thermocouple
-extern Thermocouple* RerouteTC;
-extern Thermocouple* ChamberTC;
-extern Thermocouple* RerouteTC3;
-
+extern Thermocouple RerouteTC;
+extern Thermocouple ChamberTC;
+extern Thermocouple RerouteTC3;
 
 // Ignitor
 extern Relay Ignitor;

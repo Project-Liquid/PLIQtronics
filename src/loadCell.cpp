@@ -1,11 +1,14 @@
 #include "loadCell.h"
 
-LoadCell::LoadCell(int DT_PIN, int SCK_PIN, int gain) {
+LoadCell::LoadCell(int gain) {
   this->gain = gain;
+} 
+
+void LoadCell::begin(int DT_PIN, int SCK_PIN) {
   scale.begin(DT_PIN, SCK_PIN);
   if (!scale.wait_ready_timeout(1000)) Serial.println("Load cell not found");
   scale.tare();
-} 
+}
 
 float LoadCell::getAverage(int samples = 100) {
   float sum = 0;

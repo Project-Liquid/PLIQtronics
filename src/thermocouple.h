@@ -14,6 +14,7 @@ private:
 
 public:
   Thermocouple(int I2C_ADDRESS = 0x67);
+  void begin();
   static float cToF(float c);
   bool checkConnection();
   float readHot();

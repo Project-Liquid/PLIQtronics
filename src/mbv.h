@@ -29,6 +29,7 @@ private:
 
 public:
     MBV(int speed_pin, int dir_pin_1, int dir_pin_2, int open_limit_pin, int close_limit_pin);
+    void begin();
     void setSpeed(int speed);
     void brake();
     void coast();

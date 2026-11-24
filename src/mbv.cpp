@@ -7,14 +7,16 @@ MBV::MBV(int speed_pin, int dir_pin_1, int dir_pin_2, int open_limit_pin, int cl
     this->open_limit_pin = open_limit_pin;
     this->close_limit_pin = close_limit_pin;
 
+    this->speed = 0;
+    this->moving = false;
+}
+
+void MBV::begin() {
     pinMode(speed_pin, OUTPUT);
     pinMode(dir_pin_1, OUTPUT);
     pinMode(dir_pin_2, OUTPUT);
     pinMode(open_limit_pin, INPUT_PULLUP);
     pinMode(close_limit_pin, INPUT_PULLUP);
-
-    this->speed = 0;
-    this->moving = false;
 }
 
 void MBV::setSpeed(int speed) {

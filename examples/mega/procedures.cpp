@@ -58,9 +58,9 @@ void NitrousMBVCloseFailureResponse() {
 void CombustionPropogationResponse() {
   neutralizeAll();
 
-  NitrousMBV->close();
+  NitrousMBV.close();
   NitrousRunValve.close();
-  EthaneMBV->close();
+  EthaneMBV.close();
   EthaneRunValve.close();
 
   NitrousVent.open();
@@ -71,9 +71,9 @@ void CombustionPropogationResponse() {
 void InlineThermalDecompResponse() {
   neutralizeAll();
 
-  NitrousMBV->close();
+  NitrousMBV.close();
   NitrousRunValve.close();
-  EthaneMBV->setNextActuation(1000, CLOSE);
+  EthaneMBV.setNextActuation(1000, CLOSE);
   EthaneRunValve.setNextActuation(1000, CLOSE);
 }
 void LostLoadCellResponse() {}
@@ -94,8 +94,8 @@ void neutralizeAll() {
   NitrousVent.neutralize();
   EthaneRunValve.neutralize();
   NitrousRunValve.neutralize();
-  EthaneMBV->neutralize();
-  NitrousMBV->neutralize();
+  EthaneMBV.neutralize();
+  NitrousMBV.neutralize();
   EthaneHeater1->off();
   EthaneHeater2->off();
   NitrousHeater1->off();
@@ -106,11 +106,11 @@ void EMERGENCY_VENT() {
   // clear the schedules
   neutralizeAll();
 
-  if (EthaneMBV->isOpen()) {
-    EthaneMBV->close();
+  if (EthaneMBV.isOpen()) {
+    EthaneMBV.close();
   }
-  if (NitrousMBV->isOpen()) {
-    NitrousMBV->close();
+  if (NitrousMBV.isOpen()) {
+    NitrousMBV.close();
   }
   ventEthane();
   ventNitrous();
@@ -130,12 +130,12 @@ void ventNitrous() {
 
 void coldFlowEthane(long duration_ms) {
   EthaneRunValve.clearSchedule();
-  EthaneMBV->clearSchedule();
+  EthaneMBV.clearSchedule();
 
   EthaneRunValve.open();
 
-  EthaneMBV->setNextActuation(RUN_EQUALIZE_TIME, OPEN);
-  EthaneMBV->setNextActuation(RUN_EQUALIZE_TIME + duration_ms, CLOSE);
+  EthaneMBV.setNextActuation(RUN_EQUALIZE_TIME, OPEN);
+  EthaneMBV.setNextActuation(RUN_EQUALIZE_TIME + duration_ms, CLOSE);
 
   EthaneRunValve.setNextActuation(RUN_EQUALIZE_TIME + duration_ms, CLOSE);
 }
@@ -143,8 +143,8 @@ void coldFlowEthane(long duration_ms) {
 void coldFlowNitrous(long duration_ms) {
   NitrousRunValve.open();
 
-  NitrousMBV->setNextActuation(RUN_EQUALIZE_TIME, OPEN);
-  NitrousMBV->setNextActuation(RUN_EQUALIZE_TIME + duration_ms, CLOSE);
+  NitrousMBV.setNextActuation(RUN_EQUALIZE_TIME, OPEN);
+  NitrousMBV.setNextActuation(RUN_EQUALIZE_TIME + duration_ms, CLOSE);
 
   NitrousRunValve.setNextActuation(RUN_EQUALIZE_TIME + duration_ms, false);
 }
@@ -157,10 +157,10 @@ void staticFire() {
   Ignitor.setNextActuation(5000, true);
 
   // if (ChamberTC->readHot() > 100) {
-    NitrousMBV->open();
-    EthaneMBV->setNextActuation(ETHANE_DELAY, OPEN);
-    NitrousMBV->setNextActuation(ETHANE_DELAY + static_fire_duration_ms, CLOSE);
-    EthaneMBV->setNextActuation(ETHANE_DELAY + static_fire_duration_ms + BURNOUT_DELAY, CLOSE);
+    NitrousMBV.open();
+    EthaneMBV.setNextActuation(ETHANE_DELAY, OPEN);
+    NitrousMBV.setNextActuation(ETHANE_DELAY + static_fire_duration_ms, CLOSE);
+    EthaneMBV.setNextActuation(ETHANE_DELAY + static_fire_duration_ms + BURNOUT_DELAY, CLOSE);
     NitrousRunValve.setNextActuation(ETHANE_DELAY + static_fire_duration_ms, CLOSE);
     EthaneRunValve.setNextActuation(ETHANE_DELAY + static_fire_duration_ms + BURNOUT_DELAY, CLOSE);
     

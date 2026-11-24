@@ -177,8 +177,8 @@ extern Relay NitrousRunValve;
 extern Relay NitrousVent;
 
 // Motorized Ball Valves
-extern MBV* EthaneMBV;
-extern MBV* NitrousMBV;
+extern MBV EthaneMBV;
+extern MBV NitrousMBV;
 
 // Load Cells
 extern LoadCell* EthaneLC2;
@@ -215,17 +215,6 @@ extern CmdBuffer cmdBuffer2;
 
 // Redlines
 extern int current_highest_redline;
-extern Redline EthaneOverpressure;
-extern Redline NitrousOverpressure;
-extern Redline EthaneMBVCloseFailure;
-extern Redline NitrousMBVCloseFailure;
-extern Redline CombustionPropogation;
-extern Redline InlineThermalDecomp;
-extern Redline LostLoadCell;
-extern Redline EthaneUnderweight;
-extern Redline NitrousUnderweight;
-extern Redline EthaneOverweight;
-extern Redline NitrousOverweight;
 
 
 #endif // MAIN_H
